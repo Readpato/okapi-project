@@ -1,17 +1,19 @@
 <script setup lang="ts">
-
+import { ref } from 'vue'
 import products from './data/products.json'
-import type { Product } from './types/Product';
+import type { Product } from './types/Product'
+
 const date = Date.now()
-const productsWithQuantity = products.map((product) => ({
+const productsWithQuantity = ref(products.map(product => ({
   ...product,
-  quantity: 0
-}))
+  quantity: 0,
+})))
+
 function arrayToCSV(data: any) {
   const csvRows = []
-  const headers = Object.keys(data[0]);
+  const headers = Object.keys(data[0])
   console.log((headers))
-  csvRows.push(headers.join(','));
+  csvRows.push(headers.join(','))
   for (const item of data) {
     const SKU = item.SKU
     const QTY = item.QTY
@@ -23,7 +25,6 @@ function arrayToCSV(data: any) {
 }
 function updateQuantity(product: Product, newQuantity: number) {
   product.quantity = newQuantity
-  console.log((product.quantity))
 }
 function downloadCSV(productsWithQuantity: any) {
   const blob = new Blob([productsWithQuantity], { type: 'text/csv' })
@@ -38,19 +39,19 @@ function downloadCSV(productsWithQuantity: any) {
 }
 
 function buyHandler() {
-  const productsToBuy = productsWithQuantity.filter((product) => product.quantity > 0)
-    .map((product) => ({ SKU: product.SKU, QTY: product.quantity }));
+  const productsToBuy = productsWithQuantity.value.filter(product => product.quantity > 0)
+    .map(product => ({ SKU: product.SKU, QTY: product.quantity }))
 
   if (productsToBuy.length > 0) {
-    console.log((productsToBuy));
-    const csvData = arrayToCSV(productsToBuy);
-    downloadCSV(csvData);
+    console.log((productsToBuy))
+    const csvData = arrayToCSV(productsToBuy)
+    downloadCSV(csvData)
     console.log((`${csvData} table data`))
-  } else {
-    console.log('No products selected or quantity is 0');
+  }
+  else {
+    console.log('No products selected or quantity is 0')
   }
 }
-
 </script>
 
 <template>
@@ -64,20 +65,25 @@ function buyHandler() {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(product) in   productsWithQuantity  " :key="product.SKU" class="">
-          <td :class="{ 'bg-green': product.quantity > 0, '': product.quantity <= 0 }">{{ product.title }}</td>
+        <tr v-for="product in productsWithQuantity" :key="product.SKU">
+          <td :class="{ 'bg-green': product.quantity > 0 }">{{ product.title }}</td>
           <td>{{ product.SKU }}</td>
           <td>
-            <input v-model.number="product.quantity"
-              @input='event => event.target && updateQuantity(product, (parseInt((event.target as HTMLInputElement).value)))'
-              type="number" class="text-center" :class="product.quantity > 0 ? 'bg-green' : 'bg-yellow'">
+            <input
+              v-model.number="product.quantity"
+              type="number"
+              class="text-center"
+              :class="product.quantity > 0 ? 'bg-green' : 'bg-yellow'"
+              @input="updateQuantity(product, Number(($event.target as HTMLInputElement).value))"
+            >
           </td>
         </tr>
       </tbody>
     </table>
     <button
       class="bg-blue-500 h-30 mx-auto fixed top-50 left-180 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-      @click="buyHandler">
+      @click="buyHandler"
+    >
       Buy Now
     </button>
   </div>
